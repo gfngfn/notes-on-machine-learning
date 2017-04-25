@@ -57,7 +57,7 @@
       による学習モデル \(f_{\vectheta}\) と訓練標本
       \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{}{i}{\Natleq{n}}\)
       からパラメータ \(\vectheta\) を特定することが回帰の根幹となる．
-      \newword{最小 \(2\) 乗回帰}は，\(2\) 乗誤差
+      \newword{最小 \(2\)~乗回帰}は，\(2\)~乗誤差
       \(\DS \app{\ErrorLS}{\vectheta} \defeq \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}}
         \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}\)
       を最小にするような \(\vectheta\) を求める方法である．
@@ -90,9 +90,20 @@
           \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\accessv{\paren{\mPhi \vectheta}}{i} - \accessv{\vecy}{i}}^{2}
       \\&=
           \frac{1}{2} \distprn{\mPhi \vectheta - \vecy}^{2}
-      \\&=
+        =
           \frac{1}{2} \trsps{\paren{\mPhi \vectheta - \vecy}} \paren{\mPhi \vectheta - \vecy}
+        =
+          \frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
       \end{align*}
-      となる．
+      となる．したがって最小 \(2\)~乗回帰を与える \(\vectheta\) の最適解 \(\vecthetaLS\) は
+      \begin{align*}
+        0 = \app{\paren{\nabla \ErrorLS}}{\vectheta}
+        &\iff
+          0 = \trsps{\mPhi} \mPhi \vectheta - \trsps{\mPhi} \vecy
+      \\&\iff
+          \trsps{\mPhi} \mPhi \vectheta = \trsps{\mPhi} \vecy
+      \end{align*}
+      より \(\trsps{\mPhi} \mPhi\) の正則性を仮定すると \(\vecthetaLS = \paren{\trsps{\mPhi} \mPhi}^{-1} \trsps{\mPhi} \vecy\)
+      である．
     \par
 \end{document}
