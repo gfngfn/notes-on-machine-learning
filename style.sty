@@ -1,0 +1,21 @@
+\newcommand\DS{\displaystyle}
+\newcommand\placeholder{\text{--}}
+\newcommand\setprnindex[4]{\setprn{#1\ifx\gfncmd@unique#2\gfncmd@unique\else \in #2\fi}_{\scriptrange{#3 \in #4}}}
+\renewcommand\funcdoms[3]{#1 \in \doms{#2}{#3}}
+%
+\newcommand\accessm[3]{#1|_{\scriptrange{#2, #3}}}
+\newcommand\accessv[2]{#1|_{\scriptrange{#2}}}
+%
+\newcommand\Data{\mathcal{D}}
+\newcommand\BaseFunc{\mathcal{F}}
+\newcommand\basefunc{\phi}
+\newcommand\ErrorLS{J_{\mathrm{LS}}}
+%
+\def\local@vector#1{\bm{#1}}
+\newcommand\vecx{\local@vector{x}}
+\newcommand\vecy{\local@vector{y}}
+\newcommand\vecc{\local@vector{c}}
+\newcommand\vectheta{\local@vector{\theta}}
+%
+\def\local@matrix#1{\bm{#1}}
+\newcommand\mPhi{\local@matrix{\Phi}}

@@ -1,0 +1,98 @@
+\documentclass[11pt,a4j,dvipdfmx]{jsarticle}
+  \input{settings.tex}
+  \usepackage{style}
+%
+  \title{機械学習}
+  \author{Takashi SUWA}
+\begin{document}
+  \maketitle
+%
+  \section{最小 \(2\) 乗回帰}
+    \subsection{線型モデル}
+    \indent
+      あらかじめ判明している有限個の入力・出力の組の例
+      \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{\setR^{d} \times \setR}{i}{\Natleq{n}}\)
+      をもとに，各 \(i \in \Natleq{n}\) に対して \(\app{f}{\vecx_i} \approx y_i\) を満たし，
+      かつ \(\Data\) に含まれていない入力に対してもうまく汎化された函数
+      \(\funcdoms{f}{\setR^{d}}{\setR}\) を“学習”することを考える．
+      この学習は\newword{回帰}と呼ばれ，回帰の元とする集合 \(\Data\) を
+      \newword{訓練標本}或いは\newword{教師データ}などと呼ぶ．
+      勿論 \(f\) が何の制約もない函数であれば訓練標本以外の入力に対しては全く判ることがないから，
+      \(f\) はをあらかじめ決めた基底函数族
+      \(\BaseFunc \defeq \setprnindex{\basefunc_j}{\doms{\setR^{d}}{\setR}}{j}{\Natleq{b}}\)
+      の線型結合で書けるものと設定する．すなわち，求める函数が
+      \(\vectheta \defeq \trsps{\seqprn{\theta_1, \ldots, \theta_b}}\)
+      をパラメータとして
+      \(\DS \app{f_{\vectheta}}{\vecx} \defeq
+        \sum_{\scriptrange{j \in \Natleq{b}}} \theta_j \app{\basefunc_j}{\vecx}\)
+      の形であることを仮定して，訓練標本 \(\Data\) をもとに \(\vectheta\) を“特定”する．
+      この設定を\newword{線型モデル}と呼ぶ．
+    \par
+    \subsection{カーネルモデル}
+    \indent
+      線型モデルのうち，あらかじめ決めた函数 \(\funcdoms{K}{\setR^{d} \times \setR^{d}}{\setR}\) を使い，
+      訓練標本
+      \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{}{i}{\Natleq{n}}\)
+      に依存して
+      基底函数族
+      \(\BaseFunc \defeq \setprnindex{\basefunc_j}{}{j}{\Natleq{b}}\)
+      を \(b \defeq n\)，\(\basefunc_j \defeq \app{K}{\vecx_j, \placeholder}\) と
+      定めるものを\newword{カーネルモデル}と呼ぶ．
+      基底函数族の大きさ \(b\) が訓練標本の大きさに依存することが特徴である．
+%      線型モデルの特殊な場合として\newword{ノンパラメトリックモデル}とも呼ばれる．
+    \par
+    \example{Gau\ss カーネル}{
+      \(\DS \app{K}{\vecc, \vecx} \defeq
+        \exp \paren{-\slashfrac{\distprn{\vecx - \vecc}^{2}}{2 h^{2}}}\)
+      としたカーネルモデルである．
+      要するに \(f_{\vectheta}\) は未知の入力に対して
+      訓練入力標本からの距離を“重率”として使ってパラメータを足し合わせて出力する．
+      これは訓練入力標本が \(\setR^{d}\) 内で偏って分布しているときに
+      訓練入力標本が分布していない領域を実質的に無視することに相当し，次元削減効果が期待できる．
+    }
+    \subsection{最小 \(2\) 乗回帰}
+    \indent
+      ここまでの設定に基づくと，基底函数族
+      \(\BaseFunc \defeq \setprnindex{\basefunc_j}{}{j}{\Natleq{b}}\)
+      による学習モデル \(f_{\vectheta}\) と訓練標本
+      \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{}{i}{\Natleq{n}}\)
+      からパラメータ \(\vectheta\) を特定することが回帰の根幹となる．
+      \newword{最小 \(2\) 乗回帰}は，\(2\) 乗誤差
+      \(\DS \app{\ErrorLS}{\vectheta} \defeq \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}}
+        \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}\)
+      を最小にするような \(\vectheta\) を求める方法である．
+      \begin{align*}
+        \mPhi &\defeq
+          \begin{pmatrix}
+            \app{\basefunc_1}{\vecx_1} & \cdots & \app{\basefunc_b}{\vecx_1}
+          \\
+            \vdots & \ddots & \vdots
+          \\
+            \app{\basefunc_1}{\vecx_n} & \cdots & \app{\basefunc_b}{\vecx_n}
+          \end{pmatrix}
+      \end{align*}
+      で定められる行列を\newword{計画行列}と呼び，これを用いると
+      \begin{align*}
+        \app{f_{\vectheta}}{\vecx_i}
+        &=
+          \sum_{\scriptrange{j \in \Natleq{b}}} \theta_j \app{\basefunc_j}{\vecx_i}
+        =
+          \sum_{\scriptrange{j \in \Natleq{b}}} \accessm{\mPhi}{i}{j} \accessv{\vectheta}{j}
+        =
+          \accessv{\paren{\mPhi \vectheta}}{i}
+      \end{align*}
+      と表せるから，\(\vecy \defeq \trsps{\seqprn{y_1, \ldots, y_n}}\) とおくと
+      \begin{align*}
+        \app{\ErrorLS}{\vectheta}
+        &=
+          \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}
+      \\&=
+          \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\accessv{\paren{\mPhi \vectheta}}{i} - \accessv{\vecy}{i}}^{2}
+      \\&=
+          \frac{1}{2} \distprn{\mPhi \vectheta - \vecy}^{2}
+      \\&=
+          \frac{1}{2} \trsps{\paren{\mPhi \vectheta - \vecy}} \paren{\mPhi \vectheta - \vecy}
+      \end{align*}
+      となる．
+    \par
+\end{document}
