@@ -50,102 +50,181 @@
       これは訓練入力標本が \(\setR^{d}\) 内で偏って分布しているときに
       訓練入力標本が分布していない領域を実質的に無視することに相当し，次元削減効果が期待できる．
     }
-    \subsection{最小 \(2\) 乗回帰}
-    \indent
-      ここまでの設定に基づくと，基底函数族
-      \(\BaseFunc \defeq \setprnindex{\basefunc_j}{}{j}{\Natleq{b}}\)
-      による学習モデル \(f_{\vectheta}\) と訓練標本
-      \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{}{i}{\Natleq{n}}\)
-      からパラメータ \(\vectheta\) を特定することが回帰の根幹となる．
-      \newword{最小 \(2\)~乗回帰}は，\(2\)~乗誤差
-      \(\DS \app{\ErrorLS}{\vectheta} \defeq \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}}
-        \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}\)
-      を最小にするような \(\vectheta\) を求める方法である．
-      \begin{align*}
-        \mPhi &\defeq
-          \begin{pmatrix}
-            \app{\basefunc_1}{\vecx_1} & \cdots & \app{\basefunc_b}{\vecx_1}
-          \\
-            \vdots & \ddots & \vdots
-          \\
-            \app{\basefunc_1}{\vecx_n} & \cdots & \app{\basefunc_b}{\vecx_n}
-          \end{pmatrix}
-      \end{align*}
-      で定められる行列を\newword{計画行列}と呼び，これを用いると
-      \begin{align*}
-        \app{f_{\vectheta}}{\vecx_i}
-        &=
-          \sum_{\scriptrange{j \in \Natleq{b}}} \theta_j \app{\basefunc_j}{\vecx_i}
-        =
-          \sum_{\scriptrange{j \in \Natleq{b}}} \accessm{\mPhi}{i}{j} \accessv{\vectheta}{j}
-        =
-          \accessv{\paren{\mPhi \vectheta}}{i}
-      \end{align*}
-      と表せるから，\(\vecy \defeq \trsps{\seqprn{y_1, \ldots, y_n}}\) とおくと
-      \begin{align*}
-        \app{\ErrorLS}{\vectheta}
-        &=
-          \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}
-      \\&=
-          \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\accessv{\paren{\mPhi \vectheta}}{i} - \accessv{\vecy}{i}}^{2}
-      \\&=
-          \frac{1}{2} \distprn{\mPhi \vectheta - \vecy}^{2}
-        =
-          \frac{1}{2} \trsps{\paren{\mPhi \vectheta - \vecy}} \paren{\mPhi \vectheta - \vecy}
-        =
-          \frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
-      \end{align*}
-      となる．したがって最小 \(2\)~乗回帰を与える \(\vectheta\) の最適解 \(\vecthetaLS\) は
-      \begin{align*}
-        0 = \app{\paren{\nabla \ErrorLS}}{\vectheta}
-        &\iff
-          0 = \trsps{\mPhi} \mPhi \vectheta - \trsps{\mPhi} \vecy
-      \\&\iff
-          \trsps{\mPhi} \mPhi \vectheta = \trsps{\mPhi} \vecy
-      \end{align*}
-      より \(\trsps{\mPhi} \mPhi\) の正則性を仮定すると \(\vecthetaLS = \paren{\trsps{\mPhi} \mPhi}^{-1} \trsps{\mPhi} \vecy\)
-      である．
-    \par
-    \indent
-      ただし，この最小 \(2\)~乗回帰をそのまま適用すると訓練標本に特化して複雑化しすぎた函数が得られがちである．この現象を\newword{過学習}と呼ぶ．
-      一般には訓練標本そのものにもノイズが乗っているはずなので，訓練標本の多少の変化では得られる函数が大きく変わらず，頑強であることが望ましい．
-      これを実現する方法として \(\vectheta\) に何らかの制限をかける\newword{正則化}という方法をとる．
-    \par
-    \indent
-      シンプルな方法として，何らかの“半径”のパラメータ \(r \in \setRpos\) を適切に定めて \(\distprn{\vectheta} \leq r\) なる制約をかけるというものがある．
-      すなわち最適化問題としては
-      \Minimize{%
-        \app{\ErrorLS}{\vectheta}
-      }{%
-        \distprn{\vectheta} &\leq r
-      }{}
-      と表される．ただし，この制約は“厳密に守らないといけないもの”ではないから，ペナルティ函数に緩和して制約なし最適化問題へと変形する：
-      \Minimize{%
-        \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
-      }{}{}
-      ペナルティ函数につくパラメータ \(\lambda \in \setRpos\) は“元の \(r\) に応じて決まる”ものであるが，実際には \(\lambda\) を直接指定する．
-      この手法を\newword{\(\ell^{2}\)-正則化}と呼ぶ．
-      \(\ell^{2}\)-正則化を施した最適化問題も，もともとの最小 \(2\)~乗回帰と同様に
-      \begin{align*}
-        \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
-        &=
-          \paren{\frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta
-            - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy}
-            + \frac{1}{2} \lambda \trsps{\vectheta} \mI \vectheta
-      \\&=
-          \frac{1}{2} \trsps{\vectheta} \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta
-            - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
-      \end{align*}
-      と変形できるから，\(\trsps{\mPhi} \mPhi + \lambda \mI\) の正則性を仮定すると
-      \begin{align*}
-        0 = \app{\nabla \ErrorLS}{\vectheta}
-        &\iff
-          0 = \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta - \trsps{\mPhi} \vecy
-      \\&\iff
-          \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta = \trsps{\mPhi} \vecy
-      \\&\iff
-          \vectheta = \paren{\trsps{\mPhi} \mPhi + \lambda \mI}^{-1} \trsps{\mPhi} \vecy
-      \end{align*}
-      と解くことができる．
-    \par
+    \subsection{最小 \(2\)~乗回帰}
+      \subsubsection{最小 \(2\)~乗回帰の基礎}
+        \indent
+          ここまでの設定に基づくと，基底函数族
+          \(\BaseFunc \defeq \setprnindex{\basefunc_j}{}{j}{\Natleq{b}}\)
+          による学習モデル \(f_{\vectheta}\) と訓練標本
+          \(\Data \defeq \setprnindex{\seqprn{\vecx_i, y_i}}{}{i}{\Natleq{n}}\)
+          からパラメータ \(\vectheta\) を特定することが回帰の根幹となる．
+          \newword{最小 \(2\)~乗回帰}は，\(2\)~乗誤差
+          \(\DS \app{\ErrorLS}{\vectheta} \defeq \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}}
+            \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}\)
+          を最小にするような \(\vectheta\) を求める方法である．
+          \begin{align*}
+            \mPhi &\defeq
+              \begin{pmatrix}
+                \app{\basefunc_1}{\vecx_1} & \cdots & \app{\basefunc_b}{\vecx_1}
+              \\
+                \vdots & \ddots & \vdots
+              \\
+                \app{\basefunc_1}{\vecx_n} & \cdots & \app{\basefunc_b}{\vecx_n}
+              \end{pmatrix}
+          \end{align*}
+          で定められる行列を\newword{計画行列}と呼び，これを用いると
+          \begin{align*}
+            \app{f_{\vectheta}}{\vecx_i}
+            &=
+              \sum_{\scriptrange{j \in \Natleq{b}}} \theta_j \app{\basefunc_j}{\vecx_i}
+            =
+              \sum_{\scriptrange{j \in \Natleq{b}}} \accessm{\mPhi}{i}{j} \accessv{\vectheta}{j}
+            =
+              \accessv{\paren{\mPhi \vectheta}}{i}
+          \end{align*}
+          と表せるから，\(\vecy \defeq \trsps{\seqprn{y_1, \ldots, y_n}}\) とおくと
+          \begin{align*}
+            \app{\ErrorLS}{\vectheta}
+            &=
+              \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\app{f_{\vectheta}}{\vecx_i} - y_i}^{2}
+          \\&=
+              \frac{1}{2} \sum_{\scriptrange{i \in \Natleq{n}}} \paren{\accessv{\paren{\mPhi \vectheta}}{i} - \accessv{\vecy}{i}}^{2}
+          \\&=
+              \frac{1}{2} \distprn{\mPhi \vectheta - \vecy}^{2}
+            =
+              \frac{1}{2} \trsps{\paren{\mPhi \vectheta - \vecy}} \paren{\mPhi \vectheta - \vecy}
+            =
+              \frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
+          \end{align*}
+          となる．したがって最小 \(2\)~乗回帰を与える \(\vectheta\) の最適解 \(\vecthetaLS\) は
+          \begin{align*}
+            0 = \app{\paren{\nabla \ErrorLS}}{\vectheta}
+            &\iff
+              0 = \trsps{\mPhi} \mPhi \vectheta - \trsps{\mPhi} \vecy
+          \\&\iff
+              \trsps{\mPhi} \mPhi \vectheta = \trsps{\mPhi} \vecy
+          \end{align*}
+          より \(\trsps{\mPhi} \mPhi\) の正則性を仮定すると \(\vecthetaLS = \paren{\trsps{\mPhi} \mPhi}^{-1} \trsps{\mPhi} \vecy\)
+          である．
+        \par
+        \indent
+          ただし，この最小 \(2\)~乗回帰をそのまま適用すると訓練標本に特化して複雑化しすぎた函数が得られがちである．この現象を\newword{過学習}と呼ぶ．
+          一般には訓練標本そのものにもノイズが乗っているはずなので，訓練標本の多少の変化では得られる函数が大きく変わらず，頑強であることが望ましい．
+          これを実現する方法として \(\vectheta\) に何らかの制限をかける\newword{正則化}を以降で述べる．
+        \par
+      \subsubsection{\(\normell{2}\)-正則化}
+        \indent
+          シンプルな方法として，何らかの“半径”のパラメータ \(r \in \setRpos\) を適切に定めて \(\distprn{\vectheta} \leq r\) なる制約をかけるというものがある．
+          すなわち最適化問題としては
+          \Minimize{%
+            \app{\ErrorLS}{\vectheta}
+          }{%
+            \distprn{\vectheta} &\leq r
+          }{}
+          と表される．ただし，この制約は“厳密に守らないといけないもの”ではないから，ペナルティ函数に緩和して制約なし最適化問題へと変形する：
+          \Minimize{%
+            \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
+          }{}{}
+          ペナルティ函数につくパラメータ \(\lambda \in \setRpos\) は“元の \(r\) に応じて決まる”ものであるが，実際には \(\lambda\) を直接指定する．
+          この手法を\newword{\(\normell{2}\)-正則化}と呼ぶ．
+          \(\normell{2}\)-正則化を施した最適化問題も，もともとの最小 \(2\)~乗回帰と同様に
+          \begin{align*}
+            \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
+            &=
+              \paren{\frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta
+                - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy}
+                + \frac{1}{2} \lambda \trsps{\vectheta} \mI \vectheta
+          \\&=
+              \frac{1}{2} \trsps{\vectheta} \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta
+                - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
+          \end{align*}
+          と変形できるから，\(\trsps{\mPhi} \mPhi + \lambda \mI\) の正則性を仮定すると
+          \begin{align*}
+            0 = \app{\nabla \ErrorLS}{\vectheta}
+            &\iff
+              0 = \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta - \trsps{\mPhi} \vecy
+          \\&\iff
+              \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta = \trsps{\mPhi} \vecy
+          \\&\iff
+              \vectheta = \paren{\trsps{\mPhi} \mPhi + \lambda \mI}^{-1} \trsps{\mPhi} \vecy
+          \end{align*}
+          と解くことができる．
+        \par
+      \subsubsection{交叉確認法}
+        \indent
+          回帰ではモデルを与えた下でパラメータ \(\vectheta\) を学習するわけであるが，
+          設定したモデル（基底函数族 \(\BaseFunc\) の選び方）や正則化が
+          どの程度“妥当”であるのかを確認することが肝要である．
+          ここではその確認方法として\newword{交叉確認法}を述べる．
+          基本的な発想は簡単で，
+          訓練標本のうち一部を除いて学習し，
+          除いた訓練標本に対して学習後の函数がどの程度の誤差で出力するかを確かめる，
+          というものである．
+        \par
+        \indent
+          訓練標本 \(\Data\) を適当に分割して \(\famZ \in \Partitionfin{\Data}\) とし，
+          各 \(Z \in \famZ\) に対して
+          \(\DS \bigcup \paren{\famZ \setmns \setprn{Z}}\)
+          を訓練標本として学習し，パラメータの推定値 \(\vecthetahat_{Z}\) を求める．
+          そして誤差の相加平均を
+          \begin{align*}
+            E &\defeq
+              \frac{1}{\card{\Data}}
+              \sum_{\scriptrange{Z \in \famZ}}
+              \sum_{\scriptrange{\seqprn{\vecx, y} \in Z}}
+                \paren{\app{f_{\vecthetahat_{Z}}}{\vecx} - y}^{2}
+          \end{align*}
+          と求める．この \(E\) が小さいほど良いモデルが選択できている，ということに相当する．
+        \par
+        \indent
+          最もナイーヴな交叉確認法は
+          \(\DS \famZ \defeq
+            \bigcup\setprnsep{\setprn{\seqprn{\vecx, y}}}{\seqprn{\vecx, y} \in \Data}\)
+          と訓練標本を単元集合に分ける分割を用いる方法で，\newword{ひとつ抜き交叉確認法}と呼ばれる．
+          訓練標本の大きさ \(n - 1\) の学習を \(n = \card{\Data}\) 回行なわねばならないから
+          一般には計算時間の観点で現実的でないが，
+          \(\normell{2}\)-正則化を施した線型モデルによる最小 \(2\)-乗回帰では
+          誤差 \(E\) が解析的に求められることが知られている：
+        \par
+        \REMAINS{要加筆}
+      \subsubsection{\(\normell{1}\)-正則化}
+        \indent
+          パラメータ \(\vectheta\) の次元（＝基底函数族の大きさ） \(b\) が大きいとき，
+          当然その推定値 \(\vecthetahat\) の次元も \(b\) であるから，
+          学習した函数 \(f_{\vecthetahat}\) に入力 \(\vecx\) を与えて
+          学習に基づく出力 \(\app{f_{\vecthetahat}}{\vecx}\) を計算する時間が毎回非常に大きくなりがちである．
+          そこで，基底函数族をそのままにしながら計算効率のよい函数を得るために，
+          推定値 \(\vecthetahat\) をなるべくスパースにする，
+          すなわち \(b\) 個の成分のうち多くが \(0\) となるように学習することを考えたい%
+          \footnote{%
+            \(\DS \app{f_{\vectheta}}{\vecx}
+              = \sum_{\scriptrange{j \in \Natleq{b}}} \theta_j \app{\basefunc_j}{\vecx}\)
+            であるから，\(\theta_j = 0\) なる \(j\) に対しては
+            \(\app{\basefunc_j}{\vecx}\) を計算して加算する必要がなくなる．
+          }．
+          このような目的意識で \(\vectheta\) に制約を与える方法のひとつが \(\normell{1}\)-正則化である．
+        \par
+        \indent
+          \(\normell{1}\)-正則化では適切なパラメータ \(r\) を定めて
+          \(\norm{1}{\vectheta} \leq r\) なる制約をつける：
+          \Minimize{%
+            \app{\ErrorLS}{\vectheta}
+          }{%
+            \norm{1}{\vectheta} &\leq r
+          }{}
+          これは概略として \(d \defeq 2\) の場合を書き起こすと図Xのようになる．
+          すなわち，“角”が最適解に選ばれやすくなっていることで
+          “あまり本質的な寄与を為していない”次元については \(0\) になりやすいだろう，という期待に基づくものである．
+        \par
+        \REMAINS{\(\normell{1}\)-正則化の図}
+        \indent
+          \(\normell{1}\)-正則化についても同様に，
+          適切なパラメータ \(\lambda \in \setRpos\) を用いてペナルティ函数へと緩和して制約を取り払う：
+          \Minimize{%
+            \app{\ErrorLS}{\vectheta} + \lambda \norm{1}{\vectheta}
+          }{}{}
+          しかし \(\normell{2}\)-正則化の場合とは異なり，各軸のまわりで微分不可能であるから，
+          最適解を解析的に求めることは諦める．
+        \par
+        \REMAINS{交互方向乗数法}
 \end{document}
