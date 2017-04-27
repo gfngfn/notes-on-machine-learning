@@ -106,4 +106,46 @@
       より \(\trsps{\mPhi} \mPhi\) の正則性を仮定すると \(\vecthetaLS = \paren{\trsps{\mPhi} \mPhi}^{-1} \trsps{\mPhi} \vecy\)
       である．
     \par
+    \indent
+      ただし，この最小 \(2\)~乗回帰をそのまま適用すると訓練標本に特化して複雑化しすぎた函数が得られがちである．この現象を\newword{過学習}と呼ぶ．
+      一般には訓練標本そのものにもノイズが乗っているはずなので，訓練標本の多少の変化では得られる函数が大きく変わらず，頑強であることが望ましい．
+      これを実現する方法として \(\vectheta\) に何らかの制限をかける\newword{正則化}という方法をとる．
+    \par
+    \indent
+      シンプルな方法として，何らかの“半径”のパラメータ \(r \in \setRpos\) を適切に定めて \(\distprn{\vectheta} \leq r\) なる制約をかけるというものがある．
+      すなわち最適化問題としては
+      \Minimize{%
+        \app{\ErrorLS}{\vectheta}
+      }{%
+        \distprn{\vectheta} &\leq r
+      }{}
+      と表される．ただし，この制約は“厳密に守らないといけないもの”ではないから，ペナルティ函数に緩和して制約なし最適化問題へと変形する：
+      \Minimize{%
+        \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
+      }{}{}
+      ペナルティ函数につくパラメータ \(\lambda \in \setRpos\) は“元の \(r\) に応じて決まる”ものであるが，実際には \(\lambda\) を直接指定する．
+      この手法を\newword{\(\ell^{2}\)-正則化}と呼ぶ．
+      \(\ell^{2}\)-正則化を施した最適化問題も，もともとの最小 \(2\)~乗回帰と同様に
+      \begin{align*}
+        \app{\ErrorLS}{\vectheta} + \frac{1}{2} \lambda \distprn{\vectheta}^{2}
+        &=
+          \paren{\frac{1}{2} \trsps{\vectheta} \trsps{\mPhi} \mPhi \vectheta
+            - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy}
+            + \frac{1}{2} \lambda \trsps{\vectheta} \mI \vectheta
+      \\&=
+          \frac{1}{2} \trsps{\vectheta} \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta
+            - \trsps{\vecy} \mPhi \vectheta + \frac{1}{2} \trsps{\vecy} \vecy
+      \end{align*}
+      と変形できるから，\(\trsps{\mPhi} \mPhi + \lambda \mI\) の正則性を仮定すると
+      \begin{align*}
+        0 = \app{\nabla \ErrorLS}{\vectheta}
+        &\iff
+          0 = \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta - \trsps{\mPhi} \vecy
+      \\&\iff
+          \paren{\trsps{\mPhi} \mPhi + \lambda \mI} \vectheta = \trsps{\mPhi} \vecy
+      \\&\iff
+          \vectheta = \paren{\trsps{\mPhi} \mPhi + \lambda \mI}^{-1} \trsps{\mPhi} \vecy
+      \end{align*}
+      と解くことができる．
+    \par
 \end{document}
